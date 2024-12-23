@@ -1,0 +1,68 @@
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: mail
+    password: "some_code"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    default-encoding: UTF-8
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/bytubeDB
+    username: postgres
+    password: postgres
+    pool:
+      enabled: true
+      initial-size: 10
+      max-size: 100
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: client_id
+            client-secret: secret
+            scope:
+              - openid
+              - profile
+              - email
+  liquibase:
+    enabled: false
+    change-log: db/changelog/db.changelog.yaml
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/bytubeDB
+    user: postgres
+    password: postgres
+  data:
+    redis:
+      host: localhost
+      timeout: 100000ms
+      port: 6379
+
+frontend:
+  uri: http://localhost:3000
+
+minio:
+  url: http://localhost:9000
+  username: admin
+  password: adminPassword
+  put-object-part-size: 5242880 #value in bytes (minimum is 5 MB equivalent)
+
+app:
+  streaming:
+    default-chunk-size: 3145728 #value in bytes
+
+logging:
+  level:
+    org.springframework.data.r2dbc: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG # for queries
+    io.r2dbc.postgresql.PARAM: DEBUG # for parameters
+    org.springframework.security: DEBUG
+
+server:
+  port: 8080

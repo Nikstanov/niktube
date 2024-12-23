@@ -1,0 +1,201 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Nikstanov
+      changes:
+        - sql:
+            sql: "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+
+  - changeSet:
+      id: 2
+      author: Nikstanov
+      changes:
+        - createTable:
+            tableName: user_details
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: VARCHAR
+              - column:
+                  name: provider
+                  type: VARCHAR(255)
+              - column:
+                  name: email
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: version
+                  type: INTEGER
+              - column:
+                  name: image_id
+                  type: uuid
+
+  - changeSet:
+      id: 3
+      author: Nikstanov
+      changes:
+        - createTable:
+            tableName: video
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR
+              - column:
+                  name: preview_id
+                  type: uuid
+              - column:
+                  name: open
+                  type: boolean
+              - column:
+                  name: version
+                  type: INTEGER
+              - column:
+                  name: views
+                  type: INTEGER
+              - column:
+                  name: segments_count
+                  type: INTEGER
+                  defaultValue: 0
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+              - column:
+                  name: owner_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_video_user_details"
+                    references: "user_details(id)"
+                    deleteCascade: true
+                    nullable: false
+
+  - changeSet:
+      id: 4
+      author: Nikstanov
+      changes:
+        - createTable:
+            tableName: stream
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stream_key
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: TIMESTAMP
+              - column:
+                  name: end_time
+                  type: TIMESTAMP
+              - column:
+                  name: owner_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_stream_user_details"
+                    references: "user_details(id)"
+                    deleteCascade: true
+                    nullable: false
+
+  - changeSet:
+      id: 5
+      author: Nikstanov
+      changes:
+        - createTable:
+            tableName: like
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_like_user_details"
+                    references: "user_details(id)"
+                    deleteCascade: true
+                    nullable: false
+              - column:
+                  name: video_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_like_video"
+                    references: "video(id)"
+                    deleteCascade: true
+                    nullable: false
+
+  - changeSet:
+      id: 6
+      author: Nikstanov
+      changes:
+        - createTable:
+            tableName: subscription
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  defaultValueComputed: "gen_random_uuid()"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: subscriber_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_subscription_subscriber"
+                    references: "user_details(id)"
+                    deleteCascade: true
+                    nullable: false
+              - column:
+                  name: subscribed_to_id
+                  type: uuid
+                  constraints:
+                    foreignKeyName: "fk_subscription_subscribed_to"
+                    references: "user_details(id)"
+                    deleteCascade: true
+                    nullable: false

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Streaming</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        video {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            margin: auto;
+            display: block;
+        }
+        #quality-controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <video id="video" controls autoplay muted></video>
+    <div id="quality-controls"></div>
+    <script>
+        const video = document.getElementById('video');
+        const qualityControls = document.getElementById('quality-controls');
+        const videoId = "GraphQL.mp4"; // Replace with dynamic video ID
+        const masterPlaylistUrl = `http://localhost:8080/hls/${videoId}/master.m3u8`;
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(masterPlaylistUrl);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                const levels = hls.levels;
+
+                // Create quality selection buttons
+                levels.forEach((level, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = `${level.height}p`; // Display resolution, e.g., "720p"
+                    button.addEventListener('click', () => {
+                        hls.currentLevel = index; // Set the quality directly
+                        console.log(`Quality switched to ${level.height}p`);
+                    });
+                    qualityControls.appendChild(button);
+                });
+
+                // Add an "Auto" button for adaptive quality
+                const autoButton = document.createElement('button');
+                autoButton.textContent = 'Auto';
+                autoButton.addEventListener('click', () => {
+                    hls.currentLevel = -1; // Set to -1 for automatic adaptive quality
+                    console.log('Quality switched to Auto');
+                });
+                qualityControls.appendChild(autoButton);
+            });
+
+            hls.on(Hls.Events.ERROR, function (event, data) {
+                if (data.fatal) {
+                    console.error('HLS fatal error:', data.type);
+                    switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            console.error('Network error, attempting recovery...');
+                            hls.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.error('Media error, attempting recovery...');
+                            hls.recoverMediaError();
+                            break;
+                        default:
+                            console.error('Unrecoverable error, destroying player.');
+                            hls.destroy();
+                            break;
+                    }
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = masterPlaylistUrl;
+        } else {
+            console.error('HLS is not supported in this browser.');
+        }
+    </script>
+</body>
+</html>
